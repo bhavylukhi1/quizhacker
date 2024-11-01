@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Game by Bhavy Lukhi</title>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, #ffcccc, #ccffff); /* Gradient background */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            text-align: center;
+        }
+        #app-container {
+            background-color: rgba(255, 255, 255, 0.9); /* White background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            transition: transform 0.3s;
+        }
+        #app-container:hover {
+            transform: scale(1.02); /* Slight zoom effect */
+        }
+        #score {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        #question {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .option {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .option:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px); /* Lift effect on hover */
+        }
+        #result-container {
+            display: none;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .message {
+            margin-top: 10px;
+        }
+        .chart {
+            margin: 20px 0;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <h2>Quiz Game by Bhavy Lukhi</h2>
+    <div id="score">Score: 0</div>
+    <div id="level-selection">
+        <button onclick="startQuiz('std10')" class="option">Start Quiz (Std 10)</button>
+        <button onclick="startQuiz('std11')" class="option">Start Quiz (Std 11)</button>
+        <button onclick="startQuiz('std12')" class="option">Start Quiz (Std 12)</button>
+    </div>
+    <div id="quiz-container" style="display: none;">
+        <div id="question">Question will appear here</div>
+        <div id="options"></div>
+    </div>
+    <div id="result-container">
+        <div id="result"></div>
+        <div class="chart" id="chart"></div>
+        <div class="message" id="score-message"></div>
+        <button onclick="restartQuiz()" class="option">Restart Quiz</button>
+    </div>
+</div>
+
+<script>
+    // JavaScript Code
+    const quizData = {
+        std10: [
+            { question: "What is 2 + 2?", options: ["3", "4", "5"], answer: "4" },
+            { question: "What is the capital of France?", options: ["London", "Paris", "Rome"], answer: "Paris" },
+            { question: "What is 5 * 6?", options: ["30", "20", "25"], answer: "30" },
+            { question: "What is the largest mammal?", options: ["Elephant", "Blue Whale", "Giraffe"], answer: "Blue Whale" },
+            { question: "How many continents are there?", options: ["5", "6", "7"], answer: "7" },
+            { question: "What is the boiling point of water?", options: ["100°C", "0°C", "50°C"], answer: "100°C" },
+            { question: "Who invented the telephone?", options: ["Alexander Graham Bell", "Thomas Edison", "Nikola Tesla"], answer: "Alexander Graham Bell" },
+            { question: "What is the freezing point of water?", options: ["0°C", "100°C", "50°C"], answer: "0°C" },
+            { question: "Who painted the Mona Lisa?", options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci"], answer: "Leonardo da Vinci" },
+            { question: "What is the smallest prime number?", options: ["1", "2", "3"], answer: "2" },
+            { question: "What is 15 ÷ 3?", options: ["3", "5", "6"], answer: "5" },
+            { question: "What gas do plants absorb from the atmosphere?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen"], answer: "Carbon Dioxide" },
+            { question: "Who discovered gravity?", options: ["Isaac Newton", "Albert Einstein", "Galileo Galilei"], answer: "Isaac Newton" },
+            { question: "How many colors are in a rainbow?", options: ["5", "7", "9"], answer: "7" },
+            { question: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter"], answer: "Mars" },
+            { question: "What is the chemical symbol for water?", options: ["O2", "H2O", "CO2"], answer: "H2O" },
+            { question: "How many days are in a leap year?", options: ["364", "365", "366"], answer: "366" }
+        ],
+        std11: [
+            { question: "What is the chemical symbol for Gold?", options: ["Au", "Ag", "Fe"], answer: "Au" },
+            { question: "Which is the heaviest naturally occurring element?", options: ["Lead", "Uranium", "Mercury"], answer: "Uranium" },
+            { question: "What is Newton's third law of motion?", options: ["For every action, there is an equal and opposite reaction", "F = ma", "Energy cannot be created or destroyed"], answer: "For every action, there is an equal and opposite reaction" },
+            { question: "What is the derivative of sin(x)?", options: ["cos(x)", "-cos(x)", "-sin(x)"], answer: "cos(x)" },
+            { question: "What is Avogadro's number?", options: ["6.022x10^23", "3.14", "1.6x10^-19"], answer: "6.022x10^23" },
+            { question: "What is the SI unit of power?", options: ["Joule", "Watt", "Newton"], answer: "Watt" },
+            { question: "Who proposed the theory of relativity?", options: ["Isaac Newton", "Albert Einstein", "Galileo Galilei"], answer: "Albert Einstein" },
+            { question: "Which gas is most abundant in Earth’s atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide"], answer: "Nitrogen" },
+            { question: "What is the formula for kinetic energy?", options: ["1/2 mv^2", "mgh", "F = ma"], answer: "1/2 mv^2" },
+            { question: "What is the atomic number of Hydrogen?", options: ["1", "8", "2"], answer: "1" },
+            { question: "What is the pH of a neutral substance?", options: ["0", "7", "14"], answer: "7" },
+            { question: "Who developed the periodic table?", options: ["Albert Einstein", "Marie Curie", "Dmitri Mendeleev"], answer: "Dmitri Mendeleev" },
+            { question: "What is the speed of sound in air?", options: ["340 m/s", "300 m/s", "1500 m/s"], answer: "340 m/s" },
+            { question: "Which part of the cell contains DNA?", options: ["Nucleus", "Cytoplasm", "Cell membrane"], answer: "Nucleus" },
+            { question: "What is the formula for glucose?", options: ["C6H12O6", "H2O", "NaCl"], answer: "C6H12O6" },
+            { question: "Which gas is used in photosynthesis?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide"], answer: "Carbon Dioxide" }
+        ],
+        std12: [
+            { question: "What is the speed of light in a vacuum?", options: ["3x10^8 m/s", "2x10^8 m/s", "1.5x10^8 m/s"], answer: "3x10^8 m/s" },
+            { question: "What is the quantum of electromagnetic radiation?", options: ["Photon", "Electron", "Proton"], answer: "Photon" },
+            { question: "What is the formula for calculating acceleration?", options: ["a = v/t", "a = m/v", "a = F/m"], answer: "a = v/t" },
+            { question: "What is the main source of energy for Earth?", options: ["Moon", "Sun", "Stars"], answer: "Sun" },
+            { question: "What is the unit of work in the SI system?", options: ["Joule", "Newton", "Watt"], answer: "Joule" },
+            { question: "What is the fundamental frequency of a vibrating string?", options: ["First harmonic", "Second harmonic", "Third harmonic"], answer: "First harmonic" },
+            { question: "What is the most abundant element in the universe?", options: ["Hydrogen", "Helium", "Oxygen"], answer: "Hydrogen" },
+            { question: "What is the specific heat capacity of water?", options: ["1 cal/g°C", "4.18 J/g°C", "2 J/g°C"], answer: "4.18 J/g°C" },
+            { question: "What is the relationship between pressure and volume in gases?", options: ["Boyle's Law", "Charles's Law", "Avogadro's Law"], answer: "Boyle's Law" },
+            { question: "What is the process by which a liquid turns into a gas?", options: ["Condensation", "Evaporation", "Sublimation"], answer: "Evaporation" },
+            { question: "What is the wavelength of visible light?", options: ["10^-9 m", "10^-7 m", "10^-6 m"], answer: "10^-7 m" },
+            { question: "What is the kinetic theory of gases?", options: ["Gases consist of small particles in random motion", "Gases are incompressible", "Gases have no mass"], answer: "Gases consist of small particles in random motion" },
+            { question: "What is the SI unit of electric charge?", options: ["Coulomb", "Ampere", "Volt"], answer: "Coulomb" },
+            { question: "What is the principle behind a lever?", options: ["Laws of motion", "Mechanical advantage", "Conservation of energy"], answer: "Mechanical advantage" },
+            { question: "What is the primary component of air?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide"], answer: "Nitrogen" },
+            { question: "What is the law of conservation of mass?", options: ["Mass cannot be created or destroyed", "Energy cannot be created or destroyed", "Momentum is conserved"], answer: "Mass cannot be created or destroyed" },
+            { question: "What is the molecular formula for ammonia?", options: ["NH3", "H2O", "CO2"], answer: "NH3" },
+            { question: "What is the formula for calculating momentum?", options: ["mass x velocity", "1/2 mv^2", "F = ma"], answer: "mass x velocity" },
+            { question: "What is the unit of frequency?", options: ["Hertz", "Newton", "Joule"], answer: "Hertz" },
+            { question: "What is the primary component of natural gas?", options: ["Propane", "Methane", "Butane"], answer: "Methane" },
+            { question: "What is the formula for gravitational potential energy?", options: ["mgh", "1/2 mv^2", "F = ma"], answer: "mgh" },
+            { question: "What is the main organ of the circulatory system?", options: ["Liver", "Heart", "Kidney"], answer: "Heart" },
+            { question: "What is the function of ribosomes?", options: ["Protein synthesis", "Energy production", "DNA replication"], answer: "Protein synthesis" },
+            { question: "What is the atomic mass of Carbon?", options: ["12 u", "14 u", "16 u"], answer: "12 u" },
+            { question: "What is the SI unit of pressure?", options: ["Pascal", "Bar", "Atmosphere"], answer: "Pascal" },
+            { question: "What is the formula for calculating electric power?", options: ["Voltage x Current", "Voltage / Current", "Current x Resistance"], answer: "Voltage x Current" },
+            { question: "What is the process of converting a solid directly into gas called?", options: ["Evaporation", "Sublimation", "Condensation"], answer: "Sublimation" },
+            { question: "What is the name of the process by which plants make their food?", options: ["Photosynthesis", "Respiration", "Fermentation"], answer: "Photosynthesis" }
+        ]
+    };
+
+    let selectedLevel = "";
+    let score = 0;
+    let currentQuestionIndex = 0;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+
+    function startQuiz(level) {
+        selectedLevel = level;
+        score = 0;
+        currentQuestionIndex = 0;
+        correctAnswers = 0;
+        wrongAnswers = 0;
+        document.getElementById("level-selection").style.display = "none";
+        document.getElementById("quiz-container").style.display = "block";
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const currentQuestion = quizData[selectedLevel][currentQuestionIndex];
+        document.getElementById("question").innerText = currentQuestion.question;
+        document.getElementById("options").innerHTML = currentQuestion.options.map(
+            option => `<button onclick="submitAnswer('${option}')" class="option">${option}</button>`
+        ).join("");
+    }
+
+    function submitAnswer(answer) {
+        const currentQuestion = quizData[selectedLevel][currentQuestionIndex];
+        if (answer === currentQuestion.answer) {
+            score += 4;
+            correctAnswers++;
+        } else {
+            score -= 1;
+            wrongAnswers++;
+        }
+        updateScoreDisplay();
+        currentQuestionIndex++;
+        if (currentQuestionIndex < quizData[selectedLevel].length) {
+            loadQuestion();
+        } else {
+            endQuiz();
+        }
+    }
+
+    function updateScoreDisplay() {
+        document.getElementById("score").innerText = `Score: ${score}`;
+    }
+
+    function endQuiz() {
+        document.getElementById("quiz-container").style.display = "none";
+        document.getElementById("result-container").style.display = "block";
+        const percentageScore = (score / (quizData[selectedLevel].length * 4)) * 100;
+        document.getElementById("result").innerText = `Final Score: ${score} / ${quizData[selectedLevel].length * 4}`;
+        
+        // Score interpretation message
+        let message = "";
+        if (percentageScore >= 60) {
+            message = "Congratulations! You are a genius!";
+        } else if (percentageScore >= 50) {
+            message = "Keep up the hard work, you are close to success!";
+        } else if (percentageScore >= 40) {
+            message = "Keep hard work!";
+        } else {
+            message = "You must work harder!";
+        }
+        document.getElementById("score-message").innerText = message;
+        
+        // Chart display
+        document.getElementById("chart").innerHTML = `
+            <div>Correct Answers: ${correctAnswers}</div>
+            <div>Wrong Answers: ${wrongAnswers}</div>
+        `;
+    }
+
+    function restartQuiz() {
+        document.getElementById("result-container").style.display = "none";
+        document.getElementById("level-selection").style.display = "block";
+        document.getElementById("score").innerText = "Score: 0";
+    }
+</script>
+
+</body>
+</html>
